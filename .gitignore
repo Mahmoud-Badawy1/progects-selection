@@ -1,0 +1,14 @@
+# Node modules
+node_modules/
+
+# Environment variables (لو عملتها مستقبلاً)
+.env
+
+# System files
+.DS_Store
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
