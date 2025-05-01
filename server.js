@@ -1,3 +1,4 @@
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -21,15 +22,10 @@ mongoose.connect(dbURI, {
 .then(() => console.log('✅ Connected to MongoDB Atlas'))
 .catch((err) => console.error('❌ MongoDB connection error:', err.message));
 
-
 // Models
-const ReservedOption = mongoose.model('ReservedOption', new mongoose.Schema({
-  option: { type: String, required: true, unique: true },
-}));
-
 const User = mongoose.model('User', new mongoose.Schema({
   name: { type: String, required: true },
-  phone: { type: String, required: true },
+  phone: { type: String, required: true, unique: true },
   option: { type: String, required: true }
 }));
 
@@ -42,28 +38,46 @@ app.post('/submit', async (req, res) => {
   }
 
   try {
-    const existingOption = await ReservedOption.findOne({ option });
-    if (existingOption) {
-      return res.status(400).send('هذا الاختيار تم حجزه بالفعل.');
+    // 1. Check if user already submitted
+    const existingUser = await User.findOne({ phone });
+    if (existingUser) {
+      return res.status(400).send('لا يمكنك الحجز أكثر من مرة.');
     }
 
-    const newOption = new ReservedOption({ option });
-    await newOption.save();
+    // 2. Check if option has already been reserved by 2 users
+    const optionCount = await User.countDocuments({ option });
+    if (optionCount >= 2) {
+      return res.status(400).send('تم حجز هذا الاختيار من قبل مستخدمين بالفعل.');
+    }
 
+    // 3. Save new user
     const newUser = new User({ name, phone, option });
     await newUser.save();
 
     res.status(200).send('تم حجز الاختيار بنجاح.');
   } catch (error) {
     console.error(error);
-    res.status(500).send('خطأ في الخادم.');
+    res.status(500).send('حدث خطأ في الخادم.');
   }
 });
 
 app.get('/reserved-options', async (req, res) => {
   try {
-    const reserved = await ReservedOption.find();
-    res.json(reserved.map(option => option.option));
+    const reserved = await User.find();
+    res.json(reserved.map(entry => entry.option));
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('خطأ في الخادم.');
+  }
+});
+
+// Optional: Get stats per option
+app.get('/option-stats', async (req, res) => {
+  try {
+    const stats = await User.aggregate([
+      { $group: { _id: "$option", count: { $sum: 1 } } }
+    ]);
+    res.json(stats);
   } catch (error) {
     console.error(error);
     res.status(500).send('خطأ في الخادم.');

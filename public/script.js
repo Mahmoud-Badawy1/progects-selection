@@ -1,17 +1,23 @@
 document.addEventListener('DOMContentLoaded', async function () {
   const selectElement = document.getElementById('option');
-  
-  try {
-    const response = await fetch('/reserved-options');
-    const reservedOptions = await response.json();
 
-    Array.from(selectElement.options).forEach(option => {
-      if (reservedOptions.includes(option.value)) {
-        option.remove();
+  try {
+    // Fetch stats per option
+    const response = await fetch('/option-stats');
+    const stats = await response.json();
+
+    // Disable/remove options reserved by 2 users
+    stats.forEach(item => {
+      if (item.count >= 2) {
+        const optionToDisable = selectElement.querySelector(`option[value="${item._id}"]`);
+        if (optionToDisable) {
+          optionToDisable.disabled = true;
+          optionToDisable.textContent += ' (تم الحجز)';
+        }
       }
     });
   } catch (error) {
-    console.error('Error fetching reserved options:', error);
+    console.error('Error fetching option stats:', error);
   }
 
   const form = document.getElementById('registerForm');
@@ -42,11 +48,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 
       if (response.ok) {
         alert('تم التسجيل بنجاح!');
-        const selectedOption = form.option.options[form.option.selectedIndex];
-        if (selectedOption) {
-          selectedOption.remove();
-        }
         form.reset();
+        window.location.reload(); // Reload to refresh option status
       } else {
         const errorMsg = await response.text();
         alert(errorMsg);
@@ -55,12 +58,5 @@ document.addEventListener('DOMContentLoaded', async function () {
       console.error('Error submitting form:', error);
       alert('حدث خطأ أثناء الاتصال بالسيرفر.');
     }
-});
-
-  form.addEventListener('reset', function () {
-    const selectElement = document.getElementById('option');
-    Array.from(selectElement.options).forEach(option => {
-      option.disabled = false;
-    });
   });
 });
