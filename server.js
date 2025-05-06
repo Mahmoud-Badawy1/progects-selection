@@ -46,7 +46,7 @@ app.post('/submit', async (req, res) => {
 
     // 2. Check if option has already been reserved by 2 users
     const optionCount = await User.countDocuments({ option });
-    if (optionCount >= 2) {
+    if (optionCount >= 1) {
       return res.status(400).send('تم حجز هذا الاختيار من قبل مستخدمين بالفعل.');
     }
 

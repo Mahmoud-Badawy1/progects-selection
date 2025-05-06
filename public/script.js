@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     // Disable/remove options reserved by 2 users
     stats.forEach(item => {
-      if (item.count >= 2) {
+      if (item.count >= 1) {
         const optionToDisable = selectElement.querySelector(`option[value="${item._id}"]`);
         if (optionToDisable) {
           optionToDisable.disabled = true;
