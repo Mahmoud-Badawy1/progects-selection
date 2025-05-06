@@ -25,21 +25,21 @@ mongoose.connect(dbURI, {
 // Models
 const User = mongoose.model('User', new mongoose.Schema({
   name: { type: String, required: true },
-  phone: { type: String, required: true, unique: true },
+  project: { type: String, required: true, unique: true },
   option: { type: String, required: true }
 }));
 
 // Routes
 app.post('/submit', async (req, res) => {
-  const { name, phone, option } = req.body;
+  const { name, project, option } = req.body;
 
-  if (!name || !phone || !option) {
+  if (!name || !project || !option) {
     return res.status(400).send('الرجاء ملء جميع الحقول.');
   }
 
   try {
     // 1. Check if user already submitted
-    const existingUser = await User.findOne({ phone });
+    const existingUser = await User.findOne({ project });
     if (existingUser) {
       return res.status(400).send('لا يمكنك الحجز أكثر من مرة.');
     }
@@ -51,7 +51,7 @@ app.post('/submit', async (req, res) => {
     }
 
     // 3. Save new user
-    const newUser = new User({ name, phone, option });
+    const newUser = new User({ name, project, option });
     await newUser.save();
 
     res.status(200).send('تم حجز الاختيار بنجاح.');

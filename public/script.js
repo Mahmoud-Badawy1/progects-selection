@@ -24,18 +24,14 @@ document.addEventListener('DOMContentLoaded', async function () {
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
 
-    if (!/^[0-9]{11}$/.test(form.phone.value)) {
-      alert('رقم الهاتف يجب أن يكون 11 رقماً.');
-      return;
-    }
-    if (form.name.value.length < 3) {
+      if (form.name.value.length < 3) {
       alert('الاسم يجب أن يكون 3 أحرف على الأقل.');
       return;
     }
 
     const formData = {
       name: form.name.value,
-      phone: form.phone.value,
+      project: form.project.value,
       option: form.option.value,
     };
 
